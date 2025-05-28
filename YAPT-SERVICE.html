@@ -30,19 +30,19 @@
   <section class="max-w-4xl mx-auto py-12 px-4">
     <h2 class="text-2xl font-semibold text-blue-700 mb-6">Our Solutions</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-      <a href="ALARMHIS.html" id="alarm-link" class="block h-full p-6 border rounded-lg shadow hover:shadow-lg transition text-center">
+      <a href="ALARMHIS.html" class="alarm-link block h-full p-6 border rounded-lg shadow hover:shadow-lg transition text-center">
         <h3 class="text-xl font-semibold text-gray-800">Read Alarm History</h3>
         <p class="text-sm mt-2 text-gray-600">Fast for check Alarm history and Summary.</p>
       </a>
-      <a href="VAR.html" id="alarm-link" class="p-6 border rounded-lg shadow hover:shadow-lg transition">
+      <a href="VAR.html" class="alarm-link p-6 border rounded-lg shadow hover:shadow-lg transition">
         <h3 class="text-xl font-semibold text-gray-800">Check Variable</h3>
         <p class="text-sm mt-2 text-gray-600">Easy to check all Variable.</p>
       </a>
-      <a href="IONAME.html" id="alarm-link" class="p-6 border rounded-lg shadow hover:shadow-lg transition">
+      <a href="IONAME.html" class="alarm-link p-6 border rounded-lg shadow hover:shadow-lg transition">
         <h3 class="text-xl font-semibold text-gray-800">Read I/O comment</h3>
         <p class="text-sm mt-2 text-gray-600">Easy to read comment from I/O Robot.</p>
       </a>
-      <a href="ALLPRM.html" id="alarm-link" class="p-6 border rounded-lg shadow hover:shadow-lg transition">
+      <a href="ALLPRM.html" class="alarm-link p-6 border rounded-lg shadow hover:shadow-lg transition">
         <h3 class="text-xl font-semibold text-gray-800">Read All Parameter</h3>
         <p class="text-sm mt-2 text-gray-600">Easy to read All Parameter Robot.</p>
       </a>
@@ -110,7 +110,7 @@
     const emailLoginCancel = document.getElementById("email-login-cancel");
     const googleLoginBtn = document.getElementById("google-login-btn");
     const loginError = document.getElementById("login-error");
-    const alarmLink = document.getElementById("alarm-link");
+    const alarmLinks = document.querySelectorAll(".alarm-link");
 
     // Show modal
     loginBtn.onclick = () => {
@@ -154,13 +154,15 @@
         });
     };
     // ถ้ายังไม่ได้ Login → เปิด Modal แทน
-    alarmLink.addEventListener("click", (e) => {
+    alarmLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
       if (!auth.currentUser) {
-        e.preventDefault(); // บล็อกไม่ให้ลิงก์ทำงาน
+        e.preventDefault();
         emailModal.classList.remove("hidden");
         emailModal.classList.add("flex");
     }
   });
+});
     // Logout
     logoutBtn.onclick = () => {
       signOut(auth);
@@ -177,6 +179,12 @@
         logoutBtn.classList.add("hidden");
       }
     });
+    onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ดึงชื่อหรืออีเมลมาแสดง
+    console.log("Welcome", user.displayName || user.email);
+  }
+});
   </script>
 </body>
 </html>
