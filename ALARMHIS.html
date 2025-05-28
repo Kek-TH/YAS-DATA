@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Log Table</title>
+    <style>
+        /* การตั้งค่ารูปแบบของโหมด Light */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s; /* เพิ่มการเปลี่ยนสีพื้นหลังและข้อความให้ลื่นไหล */
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 10px auto;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+        .buttons-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* การตั้งค่ารูปแบบของโหมด Dark */
+        body.dark-mode {
+            background-color: #181818;
+            color: #f0f0f0;
+        }
+        .container.dark-mode {
+            background-color: #2a2a2a;
+        }
+        h3.dark-mode {
+            color: #f0f0f0;
+        }
+        input[type="file"].dark-mode {
+            background-color: #333;
+            color: #f0f0f0;
+            border: 1px solid #444;
+        }
+        table.dark-mode th {
+            background-color: #333;
+        }
+        table.dark-mode td {
+            background-color: #444;
+        }
+        button.dark-mode {
+            background-color: #007BFF;
+            color: #fff;
+        }
+
+        /* ปุ่มสำหรับเลื่อนกลับไปที่ด้านบนของหน้า */
+        #topBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            display: none;
+        }
+        #topBtn:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Input สำหรับการเลือกไฟล์ -->
+        <input type="file" id="fileInput" />
+        
+        <div class="buttons-container">
+            <!-- ปุ่มต่าง ๆ ที่ใช้ในการควบคุมข้อมูล -->
+            <button id="clearBtn">Clear Data</button>
+            <button id="refreshBtn">Refresh</button>
+            <button id="switchModeBtn">Switch to Dark Mode</button>
+            <button id="exportSummaryBtn">Export Summary</button>
+            <button id="exportGraphBtn">Export Graph</button>
+        </div>
+        
+        <h3>Error Summary</h3>
+        <!-- ตารางแสดงสรุปข้อผิดพลาด -->
+        <table id="summaryTable" class="summary-table">
+            <thead>
+                <tr>
+                    <th>Error Code</th>
+                    <th>Description</th>
+                    <th>Count</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <canvas id="errorChart"></canvas>
+
+        <h3>Error Log</h3>
+        <!-- ตารางแสดงข้อผิดพลาดทั้งหมด -->
+        <table id="errorTable" class="error-table">
+            <thead>
+                <tr>
+                    <th>Error Code</th>
+                    <th>Description</th>
+                    <th>Details</th>
+                    <th>Mode</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- ปุ่ม Top เพื่อเลื่อนกลับไปยังด้านบน -->
+    <button id="topBtn" onclick="scrollToTop()">Top</button>
+
+    <script>
+        let currentFileContent = ''; // ตัวแปรเก็บเนื้อหาของไฟล์ที่โหลด
+
+        // ฟังก์ชันสำหรับการสลับโหมดระหว่าง Light และ Dark Mode
+        document.getElementById('switchModeBtn').addEventListener('click', function() {
+            const body = document.body;
+            const container = document.querySelector('.container');
+            const inputs = document.querySelectorAll('input[type="file"]');
+            const tables = document.querySelectorAll('table');
+            const buttons = document.querySelectorAll('button');
+            const headings = document.querySelectorAll('h3');
+
+            // เปลี่ยนโหมดเป็น Dark Mode หรือกลับเป็น Light Mode
+            body.classList.toggle('dark-mode');
+            container.classList.toggle('dark-mode');
+            inputs.forEach(input => input.classList.toggle('dark-mode'));
+            tables.forEach(table => table.classList.toggle('dark-mode'));
+            buttons.forEach(button => button.classList.toggle('dark-mode'));
+            headings.forEach(heading => heading.classList.toggle('dark-mode'));
+
+            // เปลี่ยนข้อความในปุ่มตามโหมดที่เลือก
+            const isDarkMode = body.classList.contains('dark-mode');
+            document.getElementById('switchModeBtn').textContent = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        });
+
+        // ฟังก์ชันเมื่อเลือกไฟล์
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // ตรวจสอบชื่อไฟล์
+            if (file.name !== 'ALMHIST.DAT') {
+                alert('Please select a file named ALMHIST.DAT');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onerror = function() {
+                alert('Error reading file.');
+            };
+            reader.onload = function(e) {
+                currentFileContent = e.target.result;
+                parseLogFile(currentFileContent);
+            };
+            reader.readAsText(file); // อ่านไฟล์เป็นข้อความ
+        });
+
+        // ฟังก์ชันที่ใช้แยกข้อมูลจากไฟล์ที่เลือก
+        function parseLogFile(content) {
+            const lines = content.split('\n'); // แยกข้อมูลเป็นบรรทัด
+            const tableBody = document.querySelector('#errorTable tbody');
+            const summaryBody = document.querySelector('#summaryTable tbody');
+            tableBody.innerHTML = ''; // ล้างข้อมูลเก่าในตาราง
+            summaryBody.innerHTML = ''; // ล้างข้อมูลเก่าในตารางสรุป
+
+            const errorCount = {}; // เก็บจำนวนข้อผิดพลาดตามรหัส
+            const errorDescriptions = {};  // เก็บคำอธิบายของข้อผิดพลาด
+
+            const docFragmentTable = document.createDocumentFragment(); // สำหรับเพิ่มข้อมูลในตาราง
+            const docFragmentSummary = document.createDocumentFragment(); // สำหรับเพิ่มข้อมูลในตารางสรุป
+
+            lines.forEach((line, i) => {
+                if (!/^\d+,/.test(line)) return; // ข้ามบรรทัดที่ไม่เริ่มต้นด้วยตัวเลขและเครื่องหมายจุลภาค
+                let [code, desc, details, mode, date, time] = extractErrorDetails(lines, i);
+
+                if (parseInt(code) > 9999) return; // ข้ามข้อผิดพลาดที่มีรหัสมากกว่า 9999
+
+                code = code.padStart(4, '0'); // เติมเลข 0 หน้าให้รหัสข้อผิดพลาดเป็น 4 หลัก
+
+                // เพิ่มคำอธิบายของข้อผิดพลาดใน dictionary
+                errorDescriptions[code] = desc;
+
+                const row = document.createElement('tr'); // สร้างแถวใหม่ในตาราง
+                row.innerHTML = `<td>${code}</td><td>${desc}</td><td>${details}</td><td>${mode}</td><td>${date}</td><td>${time}</td>`;
+                docFragmentTable.appendChild(row);
+
+                errorCount[code] = (errorCount[code] || 0) + 1; // นับจำนวนข้อผิดพลาดตามรหัส
+            });
+
+            // จัดเรียงข้อผิดพลาดจากมากไปน้อย
+            const sortedErrors = Object.entries(errorCount).sort((a, b) => b[1] - a[1]);
+            const totalErrors = Object.values(errorCount).reduce((sum, count) => sum + count, 0); // หาผลรวมข้อผิดพลาดทั้งหมด
+
+            // เพิ่มข้อมูลลงในตารางสรุป
+            sortedErrors.forEach(([code, count]) => {
+                const percentage = ((count / totalErrors) * 100).toFixed(2); // คำนวณเปอร์เซ็นต์
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${code}</td><td>${errorDescriptions[code]}</td><td>${count}</td><td>${percentage}%</td>`;
+                docFragmentSummary.appendChild(row);
+            });
+
+            // เพิ่มข้อมูลที่แยกแล้วลงในตาราง
+            tableBody.appendChild(docFragmentTable);
+            summaryBody.appendChild(docFragmentSummary);
+
+            // สร้างกราฟแท่งแสดงจำนวนข้อผิดพลาด
+            const labels = sortedErrors.map(([code]) => code);
+            const data = sortedErrors.map(([_, count]) => count);
+            createBarChart(labels, data);
+        }
+
+        // ฟังก์ชันสำหรับแยกข้อมูลข้อผิดพลาดจากบรรทัดในไฟล์
+        function extractErrorDetails(lines, index) {
+            const parts = lines[index].split(','); 
+            const code = parts[0];
+            const desc = parts[1];
+            let details = parts.slice(2, -1).join(' ').replace(/,/g, ' '); 
+            const dateTime = lines[index + 2] ? lines[index + 2].trim() : '';
+            const [date, time] = dateTime.split(' ');
+
+            let mode = '';
+            const modeMatches = details.match(/\(TEACH\)|\(PLAY\)|\b(teach|play|remote)\b/gi);
+            if (modeMatches) {
+                mode = modeMatches.join(', ').toUpperCase();
+                modeMatches.forEach(match => {
+                    details = details.replace(match, '').trim();
+                });
+            }
+
+            return [code, desc, details, mode, date || '', time || ''];
+        }
+
+        // ฟังก์ชันสำหรับสร้างกราฟแท่ง
+        function createBarChart(labels, data) {
+            const ctx = document.getElementById('errorChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Error Count',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // ฟังก์ชันสำหรับส่งออกข้อมูลสรุปเป็นไฟล์ CSV
+        document.getElementById('exportSummaryBtn').addEventListener('click', function() {
+            const table = document.getElementById('summaryTable');
+            const rows = table.querySelectorAll('tr');
+            let csvContent = '';
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                const rowContent = Array.from(cells).map(cell => `"${cell.textContent}"`).join(',');
+                csvContent += rowContent + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'error_summary.csv';
+            link.click();
+        });
+
+        // ฟังก์ชันสำหรับส่งออกกราฟเป็นไฟล์ PNG
+        document.getElementById('exportGraphBtn').addEventListener('click', function() {
+            const canvas = document.getElementById('errorChart');
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'error_graph.png';
+            link.click();
+        });
+
+        // ฟังก์ชันสำหรับเลื่อนหน้าเว็บกลับไปที่ด้านบน
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ฟังก์ชันที่ทำให้ปุ่ม Top ปรากฏขึ้นเมื่อเลื่อนหน้า
+        window.onscroll = function() {
+            const topButton = document.getElementById('topBtn');
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                topButton.style.display = 'block';
+            } else {
+                topButton.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
