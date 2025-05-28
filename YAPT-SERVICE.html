@@ -125,12 +125,18 @@
       emailModal.classList.add("hidden");
       emailModal.classList.remove("flex");
       loginError.classList.add("hidden");
+      emailInput.value = "";
+      passwordInput.value = "";
+      loginError.classList.add("hidden");
     };
 
     emailModal.addEventListener("click", (e) => {
   if (e.target === emailModal) {
     emailModal.classList.add("hidden");
     emailModal.classList.remove("flex");
+    loginError.classList.add("hidden");
+    emailInput.value = "";
+    passwordInput.value = "";
     loginError.classList.add("hidden");
     }
     });
@@ -144,6 +150,9 @@
         .then(() => {
           emailModal.classList.add("hidden");
           emailModal.classList.remove("flex");
+          emailInput.value = "";
+          passwordInput.value = "";
+          loginError.classList.add("hidden");
         })
         .catch((error) => {
           console.error("Email login error:", error.message);
@@ -157,6 +166,9 @@
         .then(() => {
           emailModal.classList.add("hidden");
           emailModal.classList.remove("flex");
+          emailInput.value = "";
+          passwordInput.value = "";
+          loginError.classList.add("hidden");
         })
         .catch((error) => {
           console.error("Google login error:", error.message);
@@ -179,25 +191,18 @@
     };
 
     // Auth state listener    
-    onAuthStateChanged(auth, (user) => {
+   onAuthStateChanged(auth, (user) => {
   if (user) {
     loginBtn.classList.add("hidden");
     logoutBtn.classList.remove("hidden");
-    userInfo.textContent = Hello, ${user.displayName || user.email};
-    console.log("Welcome", user.displayName || user.email);
+    userInfo.textContent = `Hello, ${user.displayName || user.email}`;
     userInfo.classList.remove("hidden");
   } else {
     loginBtn.classList.remove("hidden");
     logoutBtn.classList.add("hidden");
     userInfo.classList.add("hidden");
-      }
-      else {
-      window.location.href = "ALARMHIS.html"; // กลับหน้า login
-      window.location.href = "VAR.html"; // กลับหน้า login
-      window.location.href = "IONAME.html"; // กลับหน้า login
-      window.location.href = "ALLPRM.html"; // กลับหน้า login
-      }
-    });
+  }
+});
   </script>
 </body>
 </html>
