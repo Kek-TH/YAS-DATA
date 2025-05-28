@@ -84,6 +84,15 @@
       signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+      const alarmLink = document.getElementById("alarm-link");
+
+    alarmLink.addEventListener("click", (e) => {
+      if (!auth.currentUser) {
+      e.preventDefault(); // บล็อกไม่ให้ลิงก์ทำงาน
+      emailModal.classList.remove("hidden");
+      emailModal.classList.add("flex");
+  }
+});
 
     const firebaseConfig = {
       apiKey: "AIzaSyAzNykwZ6VoV_nteMQEo3oRDaX7Ca59Ti4",
