@@ -84,15 +84,6 @@
       signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-      const alarmLink = document.getElementById("alarm-link");
-
-    alarmLink.addEventListener("click", (e) => {
-      if (!auth.currentUser) {
-      e.preventDefault(); // บล็อกไม่ให้ลิงก์ทำงาน
-      emailModal.classList.remove("hidden");
-      emailModal.classList.add("flex");
-  }
-});
 
     const firebaseConfig = {
       apiKey: "AIzaSyAzNykwZ6VoV_nteMQEo3oRDaX7Ca59Ti4",
@@ -104,6 +95,7 @@
       measurementId: "G-63TQB1N2K9"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
@@ -118,6 +110,8 @@
     const emailLoginCancel = document.getElementById("email-login-cancel");
     const googleLoginBtn = document.getElementById("google-login-btn");
     const loginError = document.getElementById("login-error");
+    const alarmLink = document.getElementById("alarm-link");
+    const emailModal = document.getElementById("email-modal");
 
     // Show modal
     loginBtn.onclick = () => {
@@ -160,7 +154,14 @@
           loginError.classList.remove("hidden");
         });
     };
-
+    // ถ้ายังไม่ได้ Login → เปิด Modal แทน
+    alarmLink.addEventListener("click", (e) => {
+      if (!auth.currentUser) {
+        e.preventDefault(); // บล็อกไม่ให้ลิงก์ทำงาน
+        emailModal.classList.remove("hidden");
+        emailModal.classList.add("flex");
+    }
+  });
     // Logout
     logoutBtn.onclick = () => {
       signOut(auth);
