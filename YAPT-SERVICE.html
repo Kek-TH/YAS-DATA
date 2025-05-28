@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white text-gray-800">
+<span id="user-info" class="text-sm text-gray-600 hidden"></span>
 
   <!-- Navbar -->
   <header class="flex justify-between items-center p-4 bg-white shadow-md">
@@ -111,6 +112,7 @@
     const googleLoginBtn = document.getElementById("google-login-btn");
     const loginError = document.getElementById("login-error");
     const alarmLinks = document.querySelectorAll(".alarm-link");
+    const userInfo = document.getElementById("user-info");
 
     // Show modal
     loginBtn.onclick = () => {
@@ -124,6 +126,14 @@
       emailModal.classList.remove("flex");
       loginError.classList.add("hidden");
     };
+
+    emailModal.addEventListener("click", (e) => {
+  if (e.target === emailModal) {
+    emailModal.classList.add("hidden");
+    emailModal.classList.remove("flex");
+    loginError.classList.add("hidden");
+    }
+    });
 
     // Login with Email
     emailLoginSubmit.onclick = () => {
@@ -160,9 +170,9 @@
         e.preventDefault();
         emailModal.classList.remove("hidden");
         emailModal.classList.add("flex");
-    }
-  });
-});
+      }
+      });
+    });
     // Logout
     logoutBtn.onclick = () => {
       signOut(auth);
@@ -183,8 +193,25 @@
   if (user) {
     // ดึงชื่อหรืออีเมลมาแสดง
     console.log("Welcome", user.displayName || user.email);
-  }
-});
+      }
+    });
+    onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginBtn.classList.add("hidden");
+    logoutBtn.classList.remove("hidden");
+    userInfo.textContent = `Hello, ${user.displayName || user.email}`;
+    userInfo.classList.remove("hidden");
+  } else {
+    loginBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+    userInfo.classList.add("hidden");
+      }
+    });
+    onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "index.html"; // กลับหน้า login
+    }
+  });
   </script>
 </body>
 </html>
